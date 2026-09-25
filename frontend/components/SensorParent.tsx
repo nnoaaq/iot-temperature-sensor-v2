@@ -44,7 +44,7 @@ export const ParentComponent = ({
   // VALITUN SENSORIN STATE
   // DEFAULT == ENSIMMÄINEN LÖYTYNYT SENSORI (RANDOM.. (nice..(ei ole)))
   const [selectedSensor, setSelectedSensor] = useState(
-    initialSensors?.[0].sensorId || "",
+    initialSensors ? initialSensors?.[0].sensorId : "",
   );
   // VALITUN PÄIVÄN STATE
   // DEFAULT == KAIKKI
