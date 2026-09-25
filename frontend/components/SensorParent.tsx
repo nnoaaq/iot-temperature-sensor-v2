@@ -1,7 +1,7 @@
 "use client";
 
 import { Sensor } from "@/types/sensor";
-import { useEffect, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import { SelectComponent } from "./Input";
 import { Measurement } from "@/types/measurement";
 import {
@@ -11,6 +11,8 @@ import {
 import { ChartLine } from "./Chart";
 import { convertUnixToDay } from "@/utils/time";
 import { SettingsModal } from "./Modal";
+import { getSensorsLimits, saveLimits } from "@/api/limits";
+import { Limit } from "@/types/limit";
 
 // TILANHALLINTA TÄSSÄ PARENT-KOMPONENTISSA
 export const ParentComponent = ({
@@ -18,6 +20,15 @@ export const ParentComponent = ({
 }: {
   initialSensors: Sensor[];
 }) => {
+  // SENSORIN RAJA-ARVOT
+  const [sensorLimitsCache, setSensorLimitsCache] = useState<
+    Map<string, Limit>
+  >(() => {
+    const map = new Map();
+    return map;
+    0;
+  });
+
   // USE STATE Y-RAJA-ARVOILLE
   const [chartY, setChartY] = useState<{
     min: number | undefined;
@@ -37,11 +48,34 @@ export const ParentComponent = ({
   // DEFAULT == KAIKKI
   const [selectedDay, setSelectedDay] = useState("all");
 
+  // NÄYTETTÄVÄN SENSORIN RAJA-ARVOT
+  const temperatureLimitsForSensor = sensorLimitsCache.get(selectedSensor);
+
   // CACHETETAAN MITTAUSTULOKSET
   // DEFAULT == TYHJÄ MAP
   const [measurementsCache, setMeasurementsCache] = useState<
     Map<string, Measurement[]>
   >(new Map());
+
+  // KUN VALITTU SENSORI MUUTTUU -- VARMENNETAAN RAJA-ARVOT -- SULJETAAN MODAALI -- NOLLATAAN Y-ARVOT
+  useEffect(() => {
+    setShowModal(false);
+    setChartY({ min: undefined, max: undefined });
+    const fetch = async () => {
+      const limits = sensorLimitsCache.get(selectedSensor);
+      if (limits) return; // ON JO OLEMASSA (UUSIN TIETO (PÄIVITETÄÄN STATEA HETI KUN NE MUUTTUU))
+      const foundLimits = await getSensorsLimits(selectedSensor);
+      if (foundLimits[0]) {
+        // RAJA-ARVOJA LÖYTYNYT
+        setSensorLimitsCache((previouslyCachedLimits) => {
+          const map = new Map(previouslyCachedLimits);
+          map.set(selectedSensor, foundLimits[0]);
+          return map;
+        });
+      }
+    };
+    fetch();
+  }, [selectedSensor]);
 
   // KUN VALITTU SENSORI TAI PÄIVÄ MUUTTUU -- VARMENNETAAN CACHE
   useEffect(() => {
@@ -131,6 +165,16 @@ export const ParentComponent = ({
         </button>
         {showModal && (
           <SettingsModal
+            saveTempLimits={async (limits: Limit) => {
+              // TALLENNETAAN TIETOKANTAAN
+              await saveLimits(selectedSensor, limits); // TIETOKANTA
+              setSensorLimitsCache((previouslyCachedLimits) => {
+                const map = new Map(previouslyCachedLimits);
+                map.set(selectedSensor, limits);
+                return map;
+              });
+            }}
+            tempLimits={temperatureLimitsForSensor!}
             onClose={() => setShowModal(false)}
             yLimits={chartY}
             changeYLimits={(field: "max" | "min", value: string) => {

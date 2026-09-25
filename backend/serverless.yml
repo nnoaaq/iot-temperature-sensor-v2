@@ -110,3 +110,9 @@ functions:
       - httpApi:
           method: POST
           path: /limits/save
+  getLimitsFromSensor:
+    handler: limits.getLimitsFromSensor
+    events:
+      - httpApi:
+          method: GET
+          path: /limits

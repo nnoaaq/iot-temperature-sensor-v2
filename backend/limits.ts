@@ -2,7 +2,7 @@ import { CustomError, handleError } from "./error";
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import * as z from "zod";
 import { dynamodb } from "./client";
-import { PutCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 const limitsTableName = process.env.limitsTableName;
 const correctAuthorizationKey = process.env.correctAuthorizationKey;
 
@@ -61,6 +61,39 @@ export const saveLimits = async (
         new CustomError(400, { message: `Tarkista kentät: ${missingFields}` }),
       );
     }
+    return handleError(error);
+  }
+};
+// /LIMITS ________ GET
+export const getLimitsFromSensor = async (
+  event: APIGatewayProxyEventV2,
+): Promise<APIGatewayProxyResultV2> => {
+  try {
+    if (!limitsTableName) {
+      throw new CustomError(400, {
+        message: "Virhe ympäristömuuttujien kanssa.",
+      });
+    }
+    const sensorId = event.queryStringParameters?.sensorId; // VAADITTU JOKAISESSA PYYNNÖSSÄ
+    if (!sensorId) {
+      throw new CustomError(400, { message: "Sensorin tunniste vaaditaan" });
+    }
+
+    const foundLimits = await dynamodb.send(
+      new QueryCommand({
+        TableName: limitsTableName,
+        KeyConditionExpression: "sensorId = :sensorId",
+        ExpressionAttributeValues: {
+          ":sensorId": sensorId,
+        },
+      }),
+    );
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify(foundLimits.Items),
+    };
+  } catch (error) {
     return handleError(error);
   }
 };

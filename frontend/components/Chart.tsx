@@ -74,24 +74,40 @@ export const ChartLine = ({
   }, [measurements]);
 
   // KAAVION ASETUKSET
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: {
-        ticks: {
-          maxTicksLimit: 5,
-          font: {
-            size: 10,
+  const chartOptions =
+    type === "temperature"
+      ? {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              ticks: {
+                maxTicksLimit: 5,
+                font: {
+                  size: 10,
+                },
+              },
+            },
+            y: {
+              min: yLimits.min,
+              max: yLimits.max,
+            },
           },
-        },
-      },
-      y: {
-        min: yLimits.min,
-        max: yLimits.max,
-      },
-    },
-  };
+        }
+      : {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              ticks: {
+                maxTicksLimit: 5,
+                font: {
+                  size: 10,
+                },
+              },
+            },
+          },
+        };
   // KAAVION DATA
   const chartData = () => {
     return {
