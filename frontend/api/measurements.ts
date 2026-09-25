@@ -8,6 +8,9 @@ export const getMeasurementsFromSensor = async (sensorId: string) => {
     if (!sensorId) return [];
     const response = await fetch(
       `${API_URL}/measurements?sensorId=${sensorId}`,
+      {
+        cache: "no-cache",
+      },
     );
     return await response.json();
   } catch (error) {
@@ -26,6 +29,9 @@ export const getMeasurementsFromDay = async (
     if (!sensorId) return [];
     const response = await fetch(
       `${API_URL}/measurements?sensorId=${sensorId}&startTime=${startTime}&endTime=${endTime}`,
+      {
+        cache: "no-cache",
+      },
     );
     return await response.json();
   } catch (error) {
