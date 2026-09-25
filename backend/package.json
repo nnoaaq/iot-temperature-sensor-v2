@@ -1,0 +1,14 @@
+{
+  "name": "iot-backend-v2",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1136.0",
+    "@aws-sdk/lib-dynamodb": "^3.1136.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.163",
+    "serverless-offline": "^14.8.2"
+  }
+}

@@ -1,0 +1,112 @@
+org: noajulkunen
+app: iot-backend-v2
+service: iot-backend-v2
+
+provider:
+  name: aws
+  runtime: nodejs24.x
+  architecture: arm64
+  region: eu-north-1
+  environment:
+    measurementsTableName: ${self:custom.measurementsTableName}
+    sensorsTableName: ${self:custom.sensorsTableName}
+    correctAuthorizationKey: ${env:authorizationKey}
+    limitsTableName: ${self:custom.limitsTableName}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Scan
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:Query
+            - dynamodb:UpdateItem
+          Resource:
+            - !GetAtt MeasurementsTable.Arn
+            - !GetAtt SensorsTable.Arn
+            - !GetAtt LimitsTable.Arn
+
+plugins:
+  - serverless-offline
+
+# .env TIEDOSTO KÄYTTÖÖN
+useDotenv: true
+
+# TÄSSÄ TIEDOSTOSSA KÄYTETTÄVÄT MUUTTUJAT
+custom:
+  measurementsTableName: ${env:measurementsTableName}
+  sensorsTableName: ${env:sensorsTableName}
+  limitsTableName: ${env:limitsTableName}
+
+# DYNAMODB TAULUJEN MÄÄRITTELYT
+# MeasurementsTable
+# sensorId:string, timeStamp:number
+# SensorsTable
+# sensorId:string
+resources:
+  Resources:
+    MeasurementsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.measurementsTableName}
+        AttributeDefinitions:
+          - AttributeName: sensorId
+            AttributeType: S
+          - AttributeName: timeStamp
+            AttributeType: N
+        KeySchema:
+          - AttributeName: sensorId
+            KeyType: HASH # partition key
+          - AttributeName: timeStamp
+            KeyType: RANGE # sort key
+    SensorsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.sensorsTableName}
+        AttributeDefinitions:
+          - AttributeName: sensorId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: sensorId
+            KeyType: HASH
+    LimitsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.limitsTableName}
+        AttributeDefinitions:
+          - AttributeName: sensorId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: sensorId
+            KeyType: HASH
+
+# LAMBDA FUNKTIOIDEN MÄÄRITTELY
+functions:
+  createNewMeasurement:
+    handler: measurements.createNewMeasurement
+    events:
+      - httpApi:
+          method: POST
+          path: /measurements/new
+  getMeasurementsBySensor:
+    handler: measurements.getMeasurementsBySensor
+    events:
+      - httpApi:
+          method: GET
+          path: /measurements
+  getSensors:
+    handler: sensors.getSensors
+    events:
+      - httpApi:
+          method: GET
+          path: /sensors
+  saveLimits:
+    handler: limits.saveLimits
+    events:
+      - httpApi:
+          method: POST
+          path: /limits/save
