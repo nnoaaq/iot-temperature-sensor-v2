@@ -107,12 +107,12 @@ export const ParentComponent = ({
     .sort((a, b) => a.timeStamp - b.timeStamp);
 
   return (
-    <div className="p-2 m-2 border border-zinc-200 rounded-xl shadow-xs relative">
-      <div className="flex justify-between">
+    <div className="p-2 m-2 border border-zinc-200 rounded-xl shadow-xs">
+      <div className="flex justify-between relative">
         <h1 className="text-amber-500 text-lg">Mittaustulokset</h1>
         <button
           onClick={(e) => setShowModal(true)}
-          className="cursor-pointer focus:text-amber-500 hover:text-amber-500 focus:ring-1 focus:ring-amber-500 outline-none"
+          className="cursor-pointer focus:text-amber-500 hover:text-amber-500 focus:text-amber-500  outline-none"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
