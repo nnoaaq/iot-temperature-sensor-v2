@@ -8,7 +8,11 @@ export const SettingsModal = ({
   changeYLimits,
   tempLimits,
   saveTempLimits,
+  showLimitLane,
+  toggleShowLimitLane,
 }: {
+  toggleShowLimitLane: (value: boolean) => void;
+  showLimitLane: boolean;
   saveTempLimits: (limits: Limit) => void;
   tempLimits: Limit;
   onClose: () => void;
@@ -64,9 +68,10 @@ export const SettingsModal = ({
         </button>
       </div>
       <div className="border border-zinc-100 p-2 rounded-xl shadow-xs mt-2">
-        <p className="text-zinc-500 text-xs uppercase">
+        <p className="text-amber-500 text-xs uppercase">
           Muokkaa kaavion näytettäviä arvoja
         </p>
+
         <div className="flex gap-2">
           <div>
             <label
@@ -115,9 +120,20 @@ export const SettingsModal = ({
         </div>
       </div>
       <div className="border border-zinc-100 p-2 rounded-xl shadow-xs mt-2">
-        <p className="text-zinc-500 text-xs uppercase">
+        <p className="text-amber-500 text-xs uppercase">
           Muokkaa sensorin raja-arvoja
         </p>
+        <div className="flex justify-between items-center">
+          <p className="text-zinc-500 uppercase text-xs">
+            Näytä raja-arvot kaaviossa
+          </p>
+          <div className="flex-1 border-b border-dashed border-zinc-300" />
+          <input
+            onChange={(e) => toggleShowLimitLane(e.target.checked)}
+            type="checkbox"
+            checked={showLimitLane}
+          />
+        </div>
         <div className="flex gap-2">
           <div>
             <label

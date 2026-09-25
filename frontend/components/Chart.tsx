@@ -1,5 +1,5 @@
 "use client";
-
+import annotationPlugin from "chartjs-plugin-annotation";
 import { Measurement } from "@/types/measurement";
 import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
@@ -12,7 +12,8 @@ import {
   PointElement,
   Tooltip,
 } from "chart.js";
-import { convertUnixToDay, convertUnixToHoursAndMinutes } from "@/utils/time";
+import { convertUnixToHoursAndMinutes } from "@/utils/time";
+import { Limit } from "@/types/limit";
 Chart.register(
   CategoryScale,
   LinearScale,
@@ -20,23 +21,29 @@ Chart.register(
   LineElement,
   Legend,
   Tooltip,
+  annotationPlugin,
 );
 export const ChartLine = ({
   measurements,
   type,
-  selectedSensor,
-  selectedDay,
   yLimits,
+  tempLimits,
+  showLimitLane,
 }: {
+  showLimitLane: boolean;
+  tempLimits: Limit;
   measurements: Measurement[];
   type: "temperature" | "humidity";
-  selectedSensor: string;
-  selectedDay: string;
   yLimits: {
     min: number | undefined;
     max: number | undefined;
   };
 }) => {
+  // LÄMPÖTILAN RAJA-ARVOT
+  const temperatureLimits = tempLimits || {
+    maxTemperature: null,
+    minTemperature: null,
+  };
   // USESTATE MEASUREMENTSEILLE
   // sensorId:[{},{},{}] __ SENSORID TAKANA KYSEISEN SENSORIN MITTAUKSET
   const [measurementsCache, setMeasurementsCache] = useState<
@@ -74,40 +81,54 @@ export const ChartLine = ({
   }, [measurements]);
 
   // KAAVION ASETUKSET
-  const chartOptions =
-    type === "temperature"
-      ? {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: {
-              ticks: {
-                maxTicksLimit: 5,
-                font: {
-                  size: 10,
-                },
-              },
-            },
-            y: {
-              min: yLimits.min,
-              max: yLimits.max,
-            },
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        ticks: {
+          maxTicksLimit: 5,
+          font: {
+            size: 10,
           },
-        }
-      : {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: {
-              ticks: {
-                maxTicksLimit: 5,
-                font: {
-                  size: 10,
-                },
-              },
-            },
-          },
-        };
+        },
+      },
+      ...(type === "temperature" && {
+        y: {
+          min: yLimits.min,
+          max: yLimits.max,
+        },
+      }),
+    },
+    plugins: {
+      annotation: {
+        // Jos showLimitLane on false, palautetaan tyhjä olio {}, joka tyhjentää viivat kaaviosta
+        annotations:
+          type === "temperature" && showLimitLane
+            ? {
+                ...(temperatureLimits.minTemperature && {
+                  min: {
+                    type: "line" as const,
+                    yMin: temperatureLimits.minTemperature,
+                    yMax: temperatureLimits.minTemperature,
+                    borderColor: "rgb(5, 16, 177)",
+                    borderWidth: 2,
+                  },
+                }),
+                ...(temperatureLimits.maxTemperature && {
+                  max: {
+                    type: "line" as const,
+                    yMin: temperatureLimits.maxTemperature,
+                    yMax: temperatureLimits.maxTemperature,
+                    borderColor: "rgb(255, 99, 132)",
+                    borderWidth: 2,
+                  },
+                }),
+              }
+            : {},
+      },
+    },
+  };
   // KAAVION DATA
   const chartData = () => {
     return {

@@ -20,6 +20,8 @@ export const ParentComponent = ({
 }: {
   initialSensors: Sensor[];
 }) => {
+  // RAJA-ARVOJEN NÄKYMINEN
+  const [showLimitLane, setShowLimitLane] = useState(false);
   // SENSORIN RAJA-ARVOT
   const [sensorLimitsCache, setSensorLimitsCache] = useState<
     Map<string, Limit>
@@ -165,6 +167,10 @@ export const ParentComponent = ({
         </button>
         {showModal && (
           <SettingsModal
+            toggleShowLimitLane={(value: boolean) => {
+              setShowLimitLane(value);
+            }}
+            showLimitLane={showLimitLane}
             saveTempLimits={async (limits: Limit) => {
               // TALLENNETAAN TIETOKANTAAN
               await saveLimits(selectedSensor, limits); // TIETOKANTA
@@ -210,18 +216,18 @@ export const ParentComponent = ({
         selectedSensor={selectedSensor}
       />
       <ChartLine
+        showLimitLane={showLimitLane}
+        tempLimits={temperatureLimitsForSensor as Limit}
         yLimits={chartY}
         measurements={filteredMeasurements || []}
         type="temperature"
-        selectedDay={selectedDay}
-        selectedSensor={selectedSensor}
       />
       <ChartLine
+        showLimitLane={showLimitLane}
+        tempLimits={temperatureLimitsForSensor as Limit}
         yLimits={chartY}
         measurements={filteredMeasurements || []}
         type="humidity"
-        selectedDay={selectedDay}
-        selectedSensor={selectedSensor}
       />
     </div>
   );
