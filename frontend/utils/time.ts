@@ -10,7 +10,7 @@ export const convertUnixToHoursAndMinutes = (time: number) => {
 export const convertUnixToDay = (time: number) => {
   const dateObj = new Date(time * 1000);
   return dateObj.toLocaleDateString("fi-FI", {
-    day: "2-digit",
+    day: "numeric",
     month: "numeric",
     year: "numeric",
   });
