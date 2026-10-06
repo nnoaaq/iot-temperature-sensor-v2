@@ -88,7 +88,7 @@ export const ParentComponent = ({
         // HAETAAN VIIMEISET 7 PÄIVÄÄ
         const foundMeasurements: Measurement[] =
           await getMeasurementsFromSensor(selectedSensor);
-        if (foundMeasurements.length == 0) return;
+        // if (foundMeasurements.length == 0) return;
         setMeasurementsCache((previouslyCachedMeasurements) => {
           const map = new Map(previouslyCachedMeasurements);
           map.set(selectedSensor, foundMeasurements);

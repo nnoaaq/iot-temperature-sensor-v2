@@ -3,7 +3,6 @@ const API_URL = process.env.API_URL;
 export const getMeasurementsFromSensor = async (sensorId: string) => {
   try {
     console.log("HAETTU TIETOKANNASTA getMeasurementFromSensor");
-
     if (!API_URL) return [];
     if (!sensorId) return [];
     const response = await fetch(
